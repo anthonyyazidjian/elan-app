@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Élan — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy:  #1B3558;
+    --sage:  #6B8F5E;
+    --gold:  #C9A052;
+    --cream: #FAF7F2;
+    --cream2:#F2EDE4;
+    --white: #FFFFFF;
+    --text:  #2C2C2C;
+    --muted: #8A8A8A;
+    --border:#E5DDD0;
+    --red:   #C0392B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream2); min-height: 100vh; }
+
+  /* ── LOGIN ── */
+  .login-screen {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--navy);
+  }
+  .login-box {
+    background: var(--cream);
+    border-radius: 24px;
+    padding: 40px 36px;
+    width: 340px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 700; color: var(--navy); letter-spacing: 6px; margin-bottom: 4px; }
+  .login-sub { font-size: 12px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 28px; }
+  .login-input {
+    width: 100%; background: var(--cream2); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text);
+    outline: none; margin-bottom: 12px;
+  }
+  .login-input:focus { border-color: var(--navy); }
+  .login-btn {
+    width: 100%; background: var(--navy); color: var(--cream);
+    border: none; border-radius: 12px; padding: 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .login-btn:active { transform: scale(0.97); }
+  .login-error { font-size: 13px; color: var(--red); margin-top: 10px; display: none; }
+
+  /* ── APP ── */
+  .app { display: none; }
+
+  /* Header */
+  .header {
+    background: var(--navy);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: var(--cream); letter-spacing: 3px; }
+  .header-badge { font-size: 11px; color: var(--gold); background: rgba(201,160,82,0.15); border-radius: 20px; padding: 3px 10px; }
+  .logout-btn { background: rgba(255,255,255,0.1); border: none; color: rgba(250,247,242,0.7); border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+  /* Nav tabs */
+  .nav-tabs {
+    background: var(--white);
+    display: flex;
+    border-bottom: 2px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 14px 20px;
+    font-size: 14px; font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+  .tab-badge {
+    background: var(--red); color: white;
+    font-size: 10px; font-weight: 700;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Content */
+  .content { padding: 24px; max-width: 900px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Cards */
+  .section-title {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px;
+    background: rgba(27,53,88,0.04);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-header h4 { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .card-header span { font-size: 12px; color: var(--muted); }
+  .card-body { padding: 14px 18px; }
+
+  /* Messages */
+  .msg-item {
+    background: var(--white);
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .msg-item.unread { border-color: var(--gold); background: rgba(201,160,82,0.04); }
+  .msg-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--cream2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .msg-info { flex: 1; }
+  .msg-info h4 { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .msg-info p  { font-size: 13px; color: var(--text); margin-top: 3px; line-height: 1.5; }
+  .msg-info .msg-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: 6px; }
+
+  /* Reply */
+  .reply-area {
+    margin-top: 10px;
+    display: none;
+  }
+  .reply-area.show { display: block; }
+  .reply-input {
+    width: 100%; background: var(--cream2); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
+    outline: none; resize: none; min-height: 70px;
+    margin-bottom: 8px;
+  }
+  .reply-input:focus { border-color: var(--navy); }
+  .btn-reply {
+    background: var(--navy); color: var(--cream);
+    border: none; border-radius: 10px; padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-toggle-reply {
+    background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; color: var(--navy); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-weight: 600;
+  }
+
+  /* RDV */
+  .rdv-item {
+    background: var(--white);
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .rdv-info h4 { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .rdv-info p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .rdv-date {
+    background: var(--navy); color: var(--cream);
+    border-radius: 10px; padding: 8px 14px;
+    text-align: center; flex-shrink: 0;
+  }
+  .rdv-date .rdv-day { font-size: 20px; font-weight: 700; font-family: 'Cormorant Garamond', serif; }
+  .rdv-date .rdv-month { font-size: 10px; letter-spacing: 1px; opacity: 0.7; }
+  .btn-cancel-rdv {
+    background: rgba(192,57,43,0.1); color: var(--red);
+    border: none; border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+  }
+
+  /* Groupes */
+  .groupe-item {
+    background: var(--white);
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .groupe-info h4 { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .groupe-info p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .groupe-code {
+    font-size: 13px; font-weight: 700;
+    background: rgba(27,53,88,0.08);
+    color: var(--navy); border-radius: 8px; padding: 6px 12px;
+    letter-spacing: 1px;
+  }
+  .btn-copy {
+    background: var(--sage); color: white;
+    border: none; border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-weight: 600; margin-left: 8px;
+  }
+
+  /* Créer groupe */
+  .create-group-form {
+    background: var(--white);
+    border-radius: 16px; border: 1.5px solid var(--border);
+    padding: 18px; margin-bottom: 20px;
+  }
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .form-input {
+    flex: 1; min-width: 160px;
+    background: var(--cream2); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+    outline: none;
+  }
+  .form-input:focus { border-color: var(--navy); }
+  .btn-create {
+    background: var(--gold); color: var(--navy);
+    border: none; border-radius: 10px; padding: 12px 20px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+  }
+
+  /* Membres */
+  .membre-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--cream2); border-radius: 20px; padding: 4px 12px;
+    font-size: 13px; color: var(--text); margin: 3px;
+  }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--white); border-radius: 16px;
+    border: 1.5px solid var(--border); padding: 18px;
+    text-align: center;
+  }
+  .stat-number { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 700; color: var(--navy); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 30px; color: var(--muted); font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: var(--cream);
+    border-radius: 20px; padding: 12px 24px;
+    font-size: 14px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 999; display: none;
+    animation: toastIn 0.3s ease;
+  }
+  @keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">ÉLAN</div>
+    <div class="login-sub">Espace Admin</div>
+    <input class="login-input" type="password" id="loginPassword" placeholder="Mot de passe" onkeydown="if(event.key==='Enter') checkLogin()"/>
+    <button class="login-btn" onclick="checkLogin()">Accéder →</button>
+    <div class="login-error" id="loginError">Mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div class="app" id="adminApp">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title">ÉLAN</div>
+      <div class="header-badge">Admin</div>
+    </div>
+    <button class="logout-btn" onclick="adminLogout()">Déconnexion</button>
+  </div>
+
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchTab('messages')" id="tab-messages">
+      💬 Messages <span class="tab-badge" id="badge-messages" style="display:none">0</span>
+    </div>
+    <div class="nav-tab" onclick="switchTab('rdv')" id="tab-rdv">
+      📅 RDV <span class="tab-badge" id="badge-rdv" style="display:none">0</span>
+    </div>
+    <div class="nav-tab" onclick="switchTab('calendrier')" id="tab-calendrier">
+      🗓️ Calendrier
+    </div>
+    <div class="nav-tab" onclick="switchTab('broadcast')" id="tab-broadcast">
+      📣 Groupés
+    </div>
+    <div class="nav-tab" onclick="switchTab('bienvenue')" id="tab-bienvenue">
+      ✉️ Bienvenue
+    </div>
+    <div class="nav-tab" onclick="switchTab('groupes')" id="tab-groupes">
+      👥 Groupes
+    </div>
+    <div class="nav-tab" onclick="switchTab('stats')" id="tab-stats">
+      📊 Stats
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── MESSAGES ── -->
+    <div class="tab-panel active" id="panel-messages">
+      <div class="section-title">Messages directs des participants</div>
+      <div id="messages-list"><div class="loading">Chargement...</div></div>
+    </div>
+
+    <!-- ── RDV ── -->
+    <div class="tab-panel" id="panel-rdv">
+      <div class="section-title">Rendez-vous à venir</div>
+      <div id="rdv-list"><div class="loading">Chargement...</div></div>
+    </div>
+
+    <!-- ── GROUPES ── -->
+    <div class="tab-panel" id="panel-groupes">
+      <div class="section-title">Créer un groupe</div>
+      <div class="create-group-form">
+        <div class="form-row">
+          <input class="form-input" id="new-group-name" placeholder="Nom du groupe (ex: Finances Avril 2026)"/>
+          <input class="form-input" id="new-group-code" placeholder="Code (ex: FINANCE-04)" style="text-transform:uppercase"/>
+          <button class="btn-create" onclick="createGroupe()">+ Créer</button>
+        </div>
+      </div>
+      <div class="section-title">Groupes actifs</div>
+      <div id="groupes-list"><div class="loading">Chargement...</div></div>
+    </div>
+
+
+    <!-- ── CALENDRIER ── -->
+    <div class="tab-panel" id="panel-calendrier">
+      <div class="section-title">Bloquer des périodes</div>
+      <div class="create-group-form" style="margin-bottom:20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px">Date début</div>
+            <input type="date" class="form-input" id="block-start"/>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px">Date fin</div>
+            <input type="date" class="form-input" id="block-end"/>
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px">Type</div>
+          <div style="display:flex;gap:8px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;flex:1">
+              <input type="radio" name="block-type" value="vacances" checked/> 🏖️ Vacances
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;flex:1">
+              <input type="radio" name="block-type" value="atelier"/> 🎓 Atelier
+            </label>
+          </div>
+        </div>
+        <input class="form-input" id="block-label" placeholder="Description (ex: Vacances d'été, Atelier Finances…)" style="margin-bottom:10px"/>
+        <button class="btn-create" onclick="addBlockedPeriod()" style="width:100%">+ Bloquer cette période</button>
+      </div>
+      <div class="section-title">Périodes bloquées</div>
+      <div id="blocked-list"><div class="loading">Chargement...</div></div>
+    </div>
+
+    <!-- ── MESSAGE GROUPÉ ── -->
+    <div class="tab-panel" id="panel-broadcast">
+      <div class="section-title">Envoyer un message à un groupe</div>
+      <div class="create-group-form">
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px">Groupe destinataire</div>
+          <select class="form-input" id="broadcast-groupe" style="cursor:pointer">
+            <option value="">Choisir un groupe…</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px">Message</div>
+          <textarea class="form-input" id="broadcast-text" rows="4" placeholder="Votre message à tous les membres du groupe…" style="resize:vertical"></textarea>
+        </div>
+        <button class="btn-create" onclick="sendBroadcast()" style="width:100%;background:var(--sage)">📣 Envoyer au groupe</button>
+      </div>
+      <div id="broadcast-confirm" style="display:none;margin-top:16px;background:rgba(107,143,94,.1);border:1.5px solid var(--sage);border-radius:12px;padding:14px;text-align:center;font-size:14px;color:var(--sage);font-weight:600">✅ Message envoyé !</div>
+    </div>
+
+    <!-- ── MESSAGES BIENVENUE ── -->
+    <div class="tab-panel" id="panel-bienvenue">
+      <div class="section-title">Messages de bienvenue</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <h4>👥 Message — Avec code groupe</h4>
+          <span>Affiché aux participants qui rejoignent un groupe</span>
+        </div>
+        <div class="card-body">
+          <textarea class="admin-field" id="welcome-groupe" rows="4" placeholder="Message de bienvenue pour les participants avec code groupe…">Bienvenue dans votre groupe ! 🌱 Cet espace est fait pour partager vos avancées, vos victoires et vos questions. Je suis là pour vous accompagner. Ensemble, de l'idée à la réussite !</textarea>
+          <button class="btn-reply" onclick="saveWelcomeMsg('groupe')" style="margin-top:8px">Enregistrer</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h4>👤 Message — Accès individuel</h4>
+          <span>Affiché aux participants sans code groupe</span>
+        </div>
+        <div class="card-body">
+          <textarea class="admin-field" id="welcome-individuel" rows="4" placeholder="Message de bienvenue pour les participants individuels…">Bienvenue ! 🌱 Vous avez un accès individuel à Élan. Vos outils et votre suivi d'objectif sont disponibles. N'hésitez pas à me contacter directement. Ensemble, de l'idée à la réussite !</textarea>
+          <button class="btn-reply" onclick="saveWelcomeMsg('individuel')" style="margin-top:8px">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATS ── -->
+    <div class="tab-panel" id="panel-stats">
+      <div class="section-title">Vue d'ensemble</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-number" id="stat-participants">-</div><div class="stat-label">Participants</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-groupes">-</div><div class="stat-label">Groupes actifs</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-messages">-</div><div class="stat-label">Messages reçus</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-rdv">-</div><div class="stat-label">RDV planifiés</div></div>
+      </div>
+      <div class="section-title">Participants récents</div>
+      <div id="participants-list"><div class="loading">Chargement...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAnsqWqr0_JBMllwODW2Nsk4geDUNs2tRY",
+    authDomain: "elan-app-ce1b7.firebaseapp.com",
+    projectId: "elan-app-ce1b7",
+    storageBucket: "elan-app-ce1b7.firebasestorage.app",
+    messagingSenderId: "583382991249",
+    appId: "1:583382991249:web:e2f0cb6c2ddb6038d71a30"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ── Load messages directs ──
+  async function loadMessages() {
+    const list = document.getElementById('messages-list');
+    const q = query(collection(db, 'messages_coach'), orderBy('createdAt', 'desc'));
+    onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><p>Aucun message pour l\'instant</p></div>';
+        document.getElementById('badge-messages').style.display = 'none';
+        return;
+      }
+      const unread = snapshot.docs.filter(d => !d.data().read).length;
+      if (unread > 0) {
+        const b = document.getElementById('badge-messages');
+        b.style.display = 'flex'; b.textContent = unread;
+      } else {
+        document.getElementById('badge-messages').style.display = 'none';
+      }
+      list.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const msg = docSnap.data();
+        const time = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+        const div = document.createElement('div');
+        div.className = 'msg-item' + (!msg.read ? ' unread' : '');
+        div.innerHTML = `
+          <div class="msg-avatar">${msg.avatar || '😊'}</div>
+          <div class="msg-info">
+            <h4>${msg.prenom || 'Participant'}</h4>
+            <p>${msg.text}</p>
+            <div class="msg-time">${time}</div>
+            <div class="reply-area" id="reply-${docSnap.id}">
+              <textarea class="reply-input" placeholder="Votre réponse..." id="reply-text-${docSnap.id}"></textarea>
+              <button class="btn-reply" onclick="sendReply('${docSnap.id}', '${msg.prenom||'Participant'}')">Envoyer</button>
+            </div>
+          </div>
+          ${!msg.read ? '<div class="unread-dot"></div>' : ''}
+          <button class="btn-toggle-reply" onclick="toggleReply('${docSnap.id}', '${docSnap.id}')">Répondre</button>
+        `;
+        list.appendChild(div);
+        // Mark as read
+        if (!msg.read) {
+          updateDoc(doc(db, 'messages_coach', docSnap.id), { read: true }).catch(console.error);
+        }
+      });
+    });
+  }
+
+  window.toggleReply = function(id) {
+    const area = document.getElementById('reply-' + id);
+    if (area) area.classList.toggle('show');
+  };
+
+  window.sendReply = async function(msgId, prenom) {
+    const textarea = document.getElementById('reply-text-' + msgId);
+    if (!textarea || !textarea.value.trim()) return;
+    await updateDoc(doc(db, 'messages_coach', msgId), {
+      reply: textarea.value.trim(),
+      repliedAt: serverTimestamp(),
+      read: true
+    });
+    showToast('✅ Réponse envoyée à ' + prenom + ' — visible dans l\'app');
+    textarea.value = '';
+    document.getElementById('reply-' + msgId).classList.remove('show');
+  };
+
+  // ── Load RDV ──
+  async function loadRdv() {
+    const list = document.getElementById('rdv-list');
+    const q = query(collection(db, 'rdv'), orderBy('createdAt', 'desc'));
+    onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Aucun RDV planifié</p></div>';
+        document.getElementById('badge-rdv').style.display = 'none';
+        return;
+      }
+      const b = document.getElementById('badge-rdv');
+      b.style.display = 'flex'; b.textContent = snapshot.size;
+      list.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const rdv = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'rdv-item';
+        const dayNum = rdv.date ? rdv.date.split(' ')[1] || '?' : '?';
+        div.innerHTML = `
+          <div class="rdv-date">
+            <div class="rdv-day">${dayNum}</div>
+            <div class="rdv-month">AVRIL</div>
+          </div>
+          <div class="rdv-info" style="flex:1">
+            <h4>${rdv.prenom || 'Participant'}</h4>
+            <p>${rdv.date || ''} à ${rdv.heure || ''}</p>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-toggle-reply" onclick="editRdv('${docSnap.id}', '${rdv.date||''}', '${rdv.heure||''}')">Modifier</button>
+            <button class="btn-cancel-rdv" onclick="cancelRdv('${docSnap.id}')">Annuler</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    });
+  }
+
+  window.cancelRdv = async function(id) {
+    if (confirm('Annuler ce RDV ?')) {
+      await deleteDoc(doc(db, 'rdv', id));
+      showToast('RDV annulé');
+    }
+  };
+
+  // ── Load Groupes ──
+  async function loadGroupes() {
+    const list = document.getElementById('groupes-list');
+    const q = query(collection(db, 'groups'));
+    onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>Aucun groupe créé</p></div>';
+        return;
+      }
+      list.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const groupe = docSnap.data();
+        const code = docSnap.id;
+        const div = document.createElement('div');
+        div.className = 'groupe-item';
+        div.innerHTML = `
+          <div class="groupe-info">
+            <h4>${groupe.name || code}</h4>
+            <p>${groupe.memberCount || 0} membres · Créé le ${groupe.createdAt ? new Date(groupe.createdAt.toDate()).toLocaleDateString('fr-FR') : '-'}</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="groupe-code">${code}</span>
+            <button class="btn-copy" onclick="copyCode('${code}')">Copier</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    });
+  }
+
+  window.createGroupe = async function() {
+    const name = document.getElementById('new-group-name').value.trim();
+    const code = document.getElementById('new-group-code').value.trim().toUpperCase();
+    if (!name || !code) { showToast('Remplissez le nom et le code ⚠️'); return; }
+    await doc(db, 'groups', code);
+    const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await setDoc(doc(db, 'groups', code), {
+      name, code, memberCount: 0, createdAt: serverTimestamp()
+    });
+    document.getElementById('new-group-name').value = '';
+    document.getElementById('new-group-code').value = '';
+    showToast('Groupe ' + code + ' créé ✓');
+  };
+
+  window.copyCode = function(code) {
+    navigator.clipboard.writeText(code).then(() => showToast('Code copié : ' + code));
+  };
+
+  // ── Load Stats ──
+  async function loadStats() {
+    try {
+      const users = await getDocs(collection(db, 'users'));
+      document.getElementById('stat-participants').textContent = users.size;
+
+      const groupes = await getDocs(collection(db, 'groups'));
+      document.getElementById('stat-groupes').textContent = groupes.size;
+
+      const messages = await getDocs(collection(db, 'messages_coach'));
+      document.getElementById('stat-messages').textContent = messages.size;
+
+      const rdv = await getDocs(collection(db, 'rdv'));
+      document.getElementById('stat-rdv').textContent = rdv.size;
+
+      // Participants list
+      const pList = document.getElementById('participants-list');
+      pList.innerHTML = '';
+      users.forEach((docSnap) => {
+        const u = docSnap.data();
+        if (!u.prenom) return;
+        const div = document.createElement('div');
+        div.className = 'msg-item';
+        div.innerHTML = `
+          <div class="msg-avatar">${u.avatar || '😊'}</div>
+          <div class="msg-info">
+            <h4>${u.prenom}</h4>
+            <p>Groupe : ${u.groupe || '-'} · Objectif : ${u.objectif || '-'}</p>
+            <div class="msg-time">${u.createdAt ? new Date(u.createdAt.toDate()).toLocaleDateString('fr-FR') : ''}</div>
+          </div>
+        `;
+        pList.appendChild(div);
+      });
+      if (users.size === 0) pList.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><p>Aucun participant encore</p></div>';
+    } catch(e) { console.error(e); }
+  }
+
+  // Expose load functions
+  window._loadMessages = loadMessages;
+  window._loadRdv = loadRdv;
+  window._loadGroupes = loadGroupes;
+  window._loadStats = loadStats;
+</script>
+
+<script>
+  // ── Auth admin ──
+  const ADMIN_PASSWORD = 'elan2026';
+
+  function checkLogin() {
+    const pwd = document.getElementById('loginPassword').value;
+    if (pwd === ADMIN_PASSWORD) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminApp').style.display = 'block';
+      initAdmin();
+      // Retry after module loads
+      setTimeout(initAdmin, 2000);
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginPassword').value = '';
+    }
+  }
+
+  function adminLogout() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('adminApp').style.display = 'none';
+    document.getElementById('loginPassword').value = '';
+  }
+
+  function initAdmin() {
+    if (window._loadMessages) window._loadMessages();
+    if (window._loadRdv) window._loadRdv();
+    if (window._loadGroupes) window._loadGroupes();
+    if (window._loadStats) window._loadStats();
+    loadBlockedPeriods();
+    loadGroupesForBroadcast();
+    loadWelcomeMsgs();
+  }
+
+
+  // Retry init after module loads - multiple attempts
+  [1000, 2000, 3500].forEach(delay => {
+    setTimeout(function() {
+      if (document.getElementById('adminApp').style.display === 'block') {
+        if (window._loadMessages) window._loadMessages();
+        if (window._loadRdv) window._loadRdv();
+        if (window._loadGroupes) window._loadGroupes();
+        loadBlockedPeriods();
+        loadGroupesForBroadcast();
+        loadWelcomeMsgs();
+      }
+    }, delay);
+  });
+
+  // ── Tabs ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'stats' && window._loadStats) window._loadStats();
+    if (name === 'broadcast') loadGroupesForBroadcast();
+    if (name === 'bienvenue') loadWelcomeMsgs();
+    if (name === 'calendrier') loadBlockedPeriods();
+  }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2500);
+  }
+  window.showToast = showToast;
+  window.switchTab = switchTab;
+  window.checkLogin = checkLogin;
+  window.adminLogout = adminLogout;
+
+  // ── Calendrier — Périodes bloquées ──
+  async function loadBlockedPeriods() {
+    const list = document.getElementById('blocked-list');
+    const q = query(collection(db, 'blocked_periods'), orderBy('start', 'asc'));
+    onSnapshot(q, (snapshot) => {
+      if(snapshot.empty) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Aucune période bloquée</p></div>'; return; }
+      list.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        const div = document.createElement('div');
+        div.className = `blocked-item type-${d.type}`;
+        const icon = d.type === 'atelier' ? '🎓' : '🏖️';
+        div.innerHTML = `
+          <div class="blocked-info">
+            <h4>${icon} ${d.label || d.type}</h4>
+            <p>${d.start} → ${d.end}</p>
+          </div>
+          <button class="btn-cancel-rdv" onclick="deleteBlocked('${docSnap.id}')">Supprimer</button>`;
+        list.appendChild(div);
+      });
+    });
+  }
+
+  window.addBlockedPeriod = async function() {
+    const start = document.getElementById('block-start').value;
+    const end = document.getElementById('block-end').value;
+    const type = document.querySelector('input[name="block-type"]:checked').value;
+    const label = document.getElementById('block-label').value.trim();
+    if(!start || !end) { showToast('Sélectionnez une date début et fin ⚠️'); return; }
+    await addDoc(collection(db, 'blocked_periods'), { start, end, type, label, createdAt: serverTimestamp() });
+    document.getElementById('block-start').value = '';
+    document.getElementById('block-end').value = '';
+    document.getElementById('block-label').value = '';
+    showToast('Période bloquée ✅');
+  };
+
+  window.deleteBlocked = async function(id) {
+    if(confirm('Supprimer cette période ?')) {
+      await deleteDoc(doc(db, 'blocked_periods', id));
+      showToast('Période supprimée');
+    }
+  };
+
+  // ── RDV — Modifier ──
+  window.editRdv = async function(id, currentDate, currentHeure) {
+    const newHeure = prompt('Nouveau créneau (ex: 14h00) :', currentHeure);
+    if(!newHeure) return;
+    const newDate = prompt('Nouvelle date (ex: Avril 15) :', currentDate);
+    if(!newDate) return;
+    await updateDoc(doc(db, 'rdv', id), { date: newDate, heure: newHeure });
+    showToast('RDV modifié ✅');
+  };
+
+  // ── Message groupé ──
+  async function loadGroupesForBroadcast() {
+    const sel = document.getElementById('broadcast-groupe');
+    const snap = await getDocs(collection(db, 'groups'));
+    snap.forEach((docSnap) => {
+      const opt = document.createElement('option');
+      opt.value = docSnap.id;
+      opt.textContent = docSnap.data().name || docSnap.id;
+      sel.appendChild(opt);
+    });
+  }
+
+  window.sendBroadcast = async function() {
+    const groupe = document.getElementById('broadcast-groupe').value;
+    const text = document.getElementById('broadcast-text').value.trim();
+    if(!groupe || !text) { showToast('Sélectionnez un groupe et rédigez un message ⚠️'); return; }
+    await addDoc(collection(db, 'groups', groupe, 'messages'), {
+      text, uid: 'anthony-coach', prenom: 'Anthony', avatar: '🌱',
+      isCoach: true, createdAt: serverTimestamp()
+    });
+    document.getElementById('broadcast-text').value = '';
+    document.getElementById('broadcast-confirm').style.display = 'block';
+    setTimeout(() => document.getElementById('broadcast-confirm').style.display = 'none', 3000);
+  };
+
+  // ── Messages bienvenue ──
+  async function loadWelcomeMsgs() {
+    try {
+      const snap = await getDoc(doc(db, 'settings', 'welcome_messages'));
+      if(snap.exists()) {
+        const d = snap.data();
+        if(d.groupe) document.getElementById('welcome-groupe').value = d.groupe;
+        if(d.individuel) document.getElementById('welcome-individuel').value = d.individuel;
+      }
+    } catch(e) {}
+  }
+
+  window.saveWelcomeMsg = async function(type) {
+    const text = document.getElementById('welcome-' + type).value.trim();
+    if(!text) return;
+    const { setDoc: sd } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await sd(doc(db, 'settings', 'welcome_messages'), { [type]: text }, { merge: true });
+    showToast('Message enregistré ✅');
+  };
+</script>
+</body>
+</html>
